@@ -52,5 +52,6 @@ candidates.drop_duplicates(subset = ['CAND_ID'], inplace = True, keep = "first")
 ############## Merge candidate names
 df = pd.merge(pacs, candidates, how  = "left", left_on= "CAND_ID", right_on="CAND_ID")
 
-# write to csv
-df.to_csv("data/pacs.csv", index = False)
+
+#### Get last names
+df['CAND_LAST_NAME'] = df['CAND_NAME'].str.split(",").str[0]
