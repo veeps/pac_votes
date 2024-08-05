@@ -55,3 +55,6 @@ df = pd.merge(pacs, candidates, how  = "left", left_on= "CAND_ID", right_on="CAN
 
 #### Get last names
 df['CAND_LAST_NAME'] = df['CAND_NAME'].str.split(",").str[0]
+
+#### Write to csv
+df.to_csv("pacs.csv", index = False)
