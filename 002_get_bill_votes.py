@@ -35,4 +35,3 @@ df = df.rename(columns={'CAND_ST_p': 'CAND_ST'})
 
 # Generate summary table
 test = get_summary_table("yea")
-test
