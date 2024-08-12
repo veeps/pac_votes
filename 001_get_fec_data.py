@@ -36,13 +36,13 @@ insurance_pacs = ["C00271007","C00384818","C00197228","C00274431","C00199711","C
 ############## Read in data files
 contributions = read_and_process_files(r"contributions_(\d+_\d+)\.txt", "data/header_contributions.csv")
 
+
 ############## Get committee names
 cm = pd.read_csv("data/cm_2023_2024.txt", sep = "|")
 header = pd.read_csv("data/header_file.csv")
 cm.columns = header.columns
 pacs = pd.merge(contributions, cm[["CMTE_ID", "CMTE_NM"]], how = "left")
-pacs = df[df["CMTE_ID"].isin(insurance_pacs)]
-
+pacs = pacs[pacs["CMTE_ID"].isin(insurance_pacs)]
 
 ############## Pull data for candidates
 candidates = read_and_process_files(r"cn_(\d+_\d+)\.txt", "data/header_candidates.csv")
