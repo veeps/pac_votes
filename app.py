@@ -22,7 +22,10 @@ pacs = pd.read_csv("data/pacs.csv")
 app_ui = ui.page_fluid(
     ui.h2("Candidate Transaction Summary"),
     ui.input_text("bill_url",label = "Bill voting records", value = "https://clerk.house.gov/evs/2023/roll724.xml" ),
-    ui.output_data_frame("grouped_table")
+    ui.row(
+        ui.column(6, ui.output_data_frame("yea_table")),
+        ui.column(6, ui.output_data_frame("nay_table"))
+    )
 )
 
 # Define server logic
@@ -34,7 +37,7 @@ def server(input, output, session):
         return votes
     
     @reactive.calc
-    def grouped_df():
+    def df():
         # Merge on 'CAND_LAST_NAME'
         df = pd.merge(votes(), pacs, on='CAND_LAST_NAME', suffixes=('_v', '_p'), how='left')
 
@@ -47,19 +50,26 @@ def server(input, output, session):
         # Rename column
         df = df.rename(columns={'CAND_ST_p': 'CAND_ST'})
 
-        # Generate summary table
-        #grouped_df = df[df['CAND_VOTE'] == "yea"].groupby(['CAND_NAME', 'CAND_PTY_AFFILIATION']).agg({'TRANSACTION_AMT': 'sum'}).reset_index().sort_values(by = "TRANSACTION_AMT", ascending = False)
-        grouped_df = get_summary_table("yea", df)
-       # grouped_df = grouped_df.rename(columns={'CAND_NAME': 'Candidate Name',
-       #                                     'TRANSACTION_AMT': 'Total $ received from insurance PACs 2020-2024',
-        #                                    'CAND_PTY_AFFILIATION': 'Candidate Party'})
-
-        return grouped_df
+        return df
+    
+    @reactive.calc
+    def yea_df():
+        yea_df = get_summary_table("yea", df())
+        return yea_df
+    
+    @reactive.calc
+    def nay_df():
+        nay_df = get_summary_table("nay", df())
+        return nay_df
     
     
     @render.data_frame
-    def grouped_table():
-        return grouped_df()
+    def yea_table():
+        return yea_df()
+    
+    @render.data_frame
+    def nay_table():
+        return nay_df()
 
 
 # Create the app
