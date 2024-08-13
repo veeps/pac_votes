@@ -20,11 +20,15 @@ pacs = pd.read_csv("data/pacs.csv")
 
 # Define UI
 app_ui = ui.page_fluid(
-    ui.h2("Candidate Transaction Summary"),
-    ui.input_text("bill_url",label = "Bill voting records", value = "https://clerk.house.gov/evs/2023/roll724.xml" ),
+    ui.h1("Voting records and $$$ received by insurance PACs"),
+    ui.h5("This tool pulls the voting record on congressional bills and traces the amount of money each member has received from the following insurance PACs: Humana, CVS Aetna, Elevance, United Health, HCSC, and Centene from 2019 to 2024. Data was pulled directly from SEC, and voting records from congress.gov", style = "margin-top: 25px; margin-bottom: 25px",),
+    ui.row(ui.column(6, "To see the voting records for a bill, add the XML link for the bill you're interested in. Go to https://www.congress.gov and find the bill's roll call number. Click on the XML View from that page and add the link here to view."),
+           ui.column(6, ui.input_text("bill_url",label = ui.h5("Enter XML link here"), value = "https://clerk.house.gov/evs/2023/roll724.xml" )), style = "background-color:#1066ff; padding-top:25px; padding-bottom:25px;"
+
+    ),
     ui.row(
-        ui.column(6, ui.output_data_frame("yea_table")),
-        ui.column(6, ui.output_data_frame("nay_table"))
+        ui.column(6, ui.h4("Yes Votes"), ui.output_data_frame("yea_table")),
+        ui.column(6, ui.h4("No Votes"), ui.output_data_frame("nay_table")), style = "margin-top: 50px"
     )
 )
 
