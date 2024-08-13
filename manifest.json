@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "locale": ".UTF-8",
+  "metadata": {
+    "appmode": "python-shiny",
+    "entrypoint": "app"
+  },
+  "python": {
+    "version": "3.12.4",
+    "package_manager": {
+      "name": "pip",
+      "version": "24.2",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "9c7a0d23065bd204ee5d5faeeba20249"
+    },
+    ".DS_Store": {
+      "checksum": "97a1e65da0b8f347b092ac6b27a54fc8"
+    },
+    ".Rhistory": {
+      "checksum": "b43af617624826211ab3f107b22bca6f"
+    },
+    ".gitignore": {
+      "checksum": "3a5c9e86d1bb3277bcc8c71a90c305fc"
+    },
+    "001_get_fec_data.py": {
+      "checksum": "13175d35cb422197b81fce815d81c477"
+    },
+    "002_get_bill_votes.py": {
+      "checksum": "eafd38b37ebdd889616af8e0b0cfba40"
+    },
+    "app.py": {
+      "checksum": "b1bf1c707cecf5cfed0950a2bb45ad32"
+    },
+    "data/cm_2019_2020.txt": {
+      "checksum": "789c201bf525ef12cc0ee3d24cce0217"
+    },
+    "data/cm_2021_2022.txt": {
+      "checksum": "cb9711f4b12f937c2bdad60ae8a43649"
+    },
+    "data/cm_2023_2024.txt": {
+      "checksum": "3e5415236899f7750049d174eb71c559"
+    },
+    "data/cn_2019_2020.txt": {
+      "checksum": "43a93e93d004f842b88b95da276f7741"
+    },
+    "data/cn_2021_2022.txt": {
+      "checksum": "00e777e3b014be02e46024069d0a0bf1"
+    },
+    "data/cn_2023_2024.txt": {
+      "checksum": "aab7e978575605f2d72ac4480b0c295e"
+    },
+    "data/contributions_2019_2020.txt": {
+      "checksum": "0999ee8bd3d3b8154eddfb1ab1ab94c5"
+    },
+    "data/contributions_2021_2022.txt": {
+      "checksum": "adc4468825a294b9ea8169fcab4bb3db"
+    },
+    "data/contributions_2023_2024.txt": {
+      "checksum": "c8cbbbf7f76bf35314f16905ff9dd5e9"
+    },
+    "data/header_candidates.csv": {
+      "checksum": "ff3fa1af7dd5f20bcbaeeaf1061fdd50"
+    },
+    "data/header_contributions.csv": {
+      "checksum": "8a3aa13c686a0f4ff88ace1aa86a46ba"
+    },
+    "data/header_file.csv": {
+      "checksum": "deecf86528d699eb76fd79121c72a13e"
+    },
+    "data/pacs.csv": {
+      "checksum": "46b54a4f6dc890a438e60c05c1ad9065"
+    },
+    "fec_api.py": {
+      "checksum": "98efd780248d70222551bfc83e45345f"
+    },
+    "fec_eda.py": {
+      "checksum": "a3d1286282182bc033f0400adb938fa6"
+    },
+    "google_api.py": {
+      "checksum": "84dcfc5da2cd523e1e056a81fa59ecfc"
+    },
+    "gov_api.py": {
+      "checksum": "b8d927482c4b6bf218c2a35f2f78ff6f"
+    },
+    "project_config.json": {
+      "checksum": "835a04ce87a5c9b8d429e4da5864af66"
+    },
+    "src/__pycache__/get_summary_table.cpython-312.pyc": {
+      "checksum": "f7454dce81f1aba7503cd89dfdb9c500"
+    },
+    "src/__pycache__/get_votes.cpython-312.pyc": {
+      "checksum": "afce4d0f8ea03bfcbe9b4938b52a4316"
+    },
+    "src/get_summary_table.py": {
+      "checksum": "d2e631efff950bfc8132bc7d651b0746"
+    },
+    "src/get_votes.py": {
+      "checksum": "6d2620b36feefc267f10e550d3720b80"
+    }
+  }
+}
