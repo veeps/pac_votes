@@ -1,2 +1,7 @@
 shiny
 pandas
+requests
+os
+json
+sys
+xml.etree.ElementTree
