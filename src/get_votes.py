@@ -37,4 +37,13 @@ def get_rollcall_votes(url):
     df = pd.DataFrame(votes, columns=['CAND_LAST_NAME', 'CAND_OFFICE_ST', 'CAND_VOTE'])
     df['CAND_LAST_NAME'] = df['CAND_LAST_NAME'].str.upper()
 
-    return df
+    # Find the "bill title" 
+    bill_title = root.find(".//vote-desc").text
+
+    # Find the "bill date" 
+    bill_date = root.find(".//action-date").text
+
+    # Find the "vote result" 
+    vote_result = root.find(".//vote-result").text
+
+    return bill_title, bill_date, vote_result, df

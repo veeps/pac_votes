@@ -23,21 +23,39 @@ app_ui = ui.page_fluid(
     ui.h1("Voting records and $$$ received by insurance PACs"),
     ui.h5("This tool pulls the voting record on congressional bills and traces the amount of money each member has received from the following insurance PACs: Humana, CVS Aetna, Elevance, United Health, HCSC, and Centene from 2019 to 2024. Data was pulled directly from SEC, and voting records from congress.gov", style = "margin-top: 25px; margin-bottom: 25px",),
     ui.row(ui.column(6, "To see the voting records for a bill, add the XML link for the bill you're interested in. Go to https://www.congress.gov and find the bill's roll call number. Click on the XML View from that page and add the link here to view."),
-           ui.column(6, ui.input_text("bill_url",label = ui.h5("Enter XML link here"), value = "https://clerk.house.gov/evs/2023/roll724.xml" )), style = "background-color:#1066ff; padding-top:25px; padding-bottom:25px;"
+           ui.column(6, ui.input_text("bill_url",label = ui.h5("Enter XML link here"), value = "https://clerk.house.gov/evs/2022/roll360.xml" )), style = "background-color:#1066ff; padding-top:25px; padding-bottom:25px;"
 
     ),
+    ui.row(ui.h3(ui.output_text("bill_title")),
+           ui.h5(ui.output_text("vote_result")), style="padding-top: 25px"
+           ),
     ui.row(
         ui.column(6, ui.h4("Yes Votes"), ui.output_data_frame("yea_table")),
-        ui.column(6, ui.h4("No Votes"), ui.output_data_frame("nay_table")), style = "margin-top: 50px"
-    )
+        ui.column(6, ui.h4("No Votes"), ui.output_data_frame("nay_table"),
+                  ui.h4("Abstain", style = "margin-top: 50px"), ui.output_data_frame("abstain_table")), style = "margin-top: 50px"
+    ), style = "padding:50px"
 )
 
 # Define server logic
 def server(input, output, session):
+
+    @render.text
+    def bill_title():
+        # req() stops execution until input.file() is truthy
+        bill_title = get_rollcall_votes(input.bill_url())[0]
+        return "Bill Title: " + bill_title
+
+    @render.text
+    def vote_result():
+        vote_result = get_rollcall_votes(input.bill_url())[2]
+        # req() stops execution until input.file() is truthy
+        bill_date = get_rollcall_votes(input.bill_url())[1]
+        return "This bill was " + vote_result + " on " + bill_date
+
     @reactive.calc
     def votes():
         # req() stops execution until input.file() is truthy
-        votes = get_rollcall_votes(input.bill_url())
+        votes = get_rollcall_votes(input.bill_url())[3]
         return votes
     
     @reactive.calc
@@ -66,6 +84,11 @@ def server(input, output, session):
         nay_df = get_summary_table("nay", df())
         return nay_df
     
+    @reactive.calc
+    def abstain_df():
+        abstain_df = get_summary_table("not voting", df())
+        return abstain_df
+    
     
     @render.data_frame
     def yea_table():
@@ -74,6 +97,10 @@ def server(input, output, session):
     @render.data_frame
     def nay_table():
         return nay_df()
+    
+    @render.data_frame
+    def abstain_table():
+        return abstain_df()
 
 
 # Create the app
