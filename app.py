@@ -31,9 +31,8 @@ def server(input, output, session):
         votes = get_rollcall_votes(input.bill_url())
         return votes
     
-    
-    @render.data_frame
-    def grouped_table():
+    @reactive.calc
+    def grouped_df():
         # Merge on 'CAND_LAST_NAME'
         df = pd.merge(votes(), pacs, on='CAND_LAST_NAME', suffixes=('_v', '_p'), how='left')
 
@@ -47,13 +46,18 @@ def server(input, output, session):
         df = df.rename(columns={'CAND_ST_p': 'CAND_ST'})
 
         # Generate summary table
-        grouped_df = df[df['CAND_VOTE'] == "yea"].groupby(['CAND_NAME']).agg({'TRANSACTION_AMT': 'sum'}).reset_index().sort_values(by = "TRANSACTION_AMT", ascending = False)
-        grouped_df = grouped_df.merge(pacs[['CAND_NAME', 'CAND_PTY_AFFILIATION']], how = "left")
+        grouped_df = df[df['CAND_VOTE'] == "yea"].groupby(['CAND_NAME', 'CAND_PTY_AFFILIATION']).agg({'TRANSACTION_AMT': 'sum'}).reset_index().sort_values(by = "TRANSACTION_AMT", ascending = False)
+
         grouped_df = grouped_df.rename(columns={'CAND_NAME': 'Candidate Name',
                                             'TRANSACTION_AMT': 'Total $ received from insurance PACs 2020-2024',
                                             'CAND_PTY_AFFILIATION': 'Candidate Party'})
-  
+
         return grouped_df
+    
+    
+    @render.data_frame
+    def grouped_table():
+        return grouped_df()
 
 
 # Create the app
