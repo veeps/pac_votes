@@ -2,3 +2,4 @@ venv/*
 .DS_Store
 data/contributions*
 data/cn*
+.Rproj.user
