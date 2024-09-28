@@ -1,6 +1,8 @@
 ---
 title: "PAC Contributions"
-output: html_document
+output: 
+  html_document:
+    keep_md: true
 date: "2024-09-28"
 ---
 
