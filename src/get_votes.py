@@ -51,6 +51,7 @@ def get_rollcall_votes(url):
 
 def get_senate_votes(url):
     # Fetch the XML file from the URL
+    response = requests.get(url)
     response.raise_for_status()  # Raise an error for bad status codes
 
     # Parse the XML content
