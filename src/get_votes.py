@@ -2,90 +2,80 @@ import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
 
+def parse_votes(vote_elements, mapping):
+    """
+    Generic function to parse vote elements based on a given mapping.
+    
+    Args:
+    - vote_elements (list of XML elements): List of vote elements to parse.
+    - mapping (dict): Dictionary that maps XML element tags to field names.
+    
+    Returns:
+    - votes (list of dict): Parsed votes with candidate names, states, and positions.
+    """
+    votes = []
+    for vote in vote_elements:
+        vote_data = {}
+        for key, tag in mapping.items():
+            element = vote.find(tag)
+            vote_data[key] = element.text.strip() if element is not None else ''
+        
+        # Handle specific adjustments (e.g., extracting name and state for rollcall)
+        if 'CAND_LAST_NAME' in vote_data and '(' in vote_data['CAND_LAST_NAME']:
+            name, state = vote_data['CAND_LAST_NAME'].rsplit('(', 1)
+            vote_data['CAND_LAST_NAME'] = name.strip()
+            vote_data['CAND_OFFICE_ST'] = state.rstrip(')')
+        
+        # Standardize and append vote record
+        votes.append({
+            'CAND_LAST_NAME': vote_data.get('CAND_LAST_NAME', '').upper(),
+            'CAND_OFFICE_ST': vote_data.get('CAND_OFFICE_ST', ''),
+            'CAND_VOTE': vote_data.get('CAND_VOTE', '').lower()
+        })
+    return votes
+
+def extract_metadata(root, title_tag, date_tag, result_tag):
+    """
+    Extracts metadata (title, date, and result) from the root XML element.
+
+    Args:
+    - root (XML element): Root XML element to extract from.
+    - title_tag (str): Tag name for the title.
+    - date_tag (str): Tag name for the date.
+    - result_tag (str): Tag name for the result.
+
+    Returns:
+    - title (str), date (str), result (str): Extracted values for each metadata field.
+    """
+    title = root.find(f".//{title_tag}").text if root.find(f".//{title_tag}") is not None else ''
+    date = root.find(f".//{date_tag}").text if root.find(f".//{date_tag}") is not None else ''
+    result = root.find(f".//{result_tag}").text if root.find(f".//{result_tag}") is not None else ''
+    return title, date, result
 
 def get_rollcall_votes(url):
-    # Fetch the XML file from the URL
+    # Fetch and parse the XML file
     response = requests.get(url)
-    response.raise_for_status()  # Raise an error for bad status codes
-
-    # Parse the XML content
+    response.raise_for_status()
     root = ET.fromstring(response.content)
 
-    # Extract "yea" and "nay" votes with candidate and state
-    votes = []
+    # URL-based configurations for XML tag mappings and metadata fields
+    if "clerk.house.gov" in url:
+        vote_elements = root.findall(".//recorded-vote")
+        vote_mapping = {'CAND_LAST_NAME': 'legislator', 'CAND_VOTE': 'vote'}
+        title_tag, date_tag, result_tag = "vote-desc", "action-date", "vote-result"
 
-    for vote in root.findall(".//recorded-vote"):
-        legislator_name = vote.find('legislator').text.strip()
-        vote_position = vote.find('vote').text.strip().lower()
-        
-        # Extract candidate name and state
-        if '(' in legislator_name and ')' in legislator_name:
-            candidate_name, state = legislator_name.rsplit('(', 1)
-            state = state.rstrip(')')
-        else:
-            candidate_name = legislator_name
-            state = ''
+    elif "https://www.senate.gov" in url:
+        vote_elements = root.findall(".//member")
+        vote_mapping = {'CAND_LAST_NAME': 'last_name', 'CAND_OFFICE_ST': 'state', 'CAND_VOTE': 'vote_cast'}
+        title_tag, date_tag, result_tag = "vote_question_text", "vote_date", "vote_result_text"
 
-        # Append to votes list
-        votes.append({
-            'CAND_LAST_NAME': candidate_name.strip(),
-            'CAND_OFFICE_ST': state.strip(),
-            'CAND_VOTE': vote_position
-        })
+    else:
+        raise ValueError(f"Unsupported URL pattern: {url}")
 
-    # Create a DataFrame from the votes list
+    # Extract votes and metadata
+    votes = parse_votes(vote_elements, vote_mapping)
+    bill_title, bill_date, vote_result = extract_metadata(root, title_tag, date_tag, result_tag)
+
+    # Create a standardized DataFrame
     df = pd.DataFrame(votes, columns=['CAND_LAST_NAME', 'CAND_OFFICE_ST', 'CAND_VOTE'])
-    df['CAND_LAST_NAME'] = df['CAND_LAST_NAME'].str.upper()
-
-    # Find the "bill title" 
-    bill_title = root.find(".//vote-desc").text
-
-    # Find the "bill date" 
-    bill_date = root.find(".//action-date").text
-
-    # Find the "vote result" 
-    vote_result = root.find(".//vote-result").text
-
-    return bill_title, bill_date, vote_result, df
-
-
-def get_senate_votes(url):
-    # Fetch the XML file from the URL
-    response = requests.get(url)
-    response.raise_for_status()  # Raise an error for bad status codes
-
-    # Parse the XML content
-    root = ET.fromstring(response.content)
-
-    # Extract "yea" and "nay" votes with candidate and state
-    votes = []
-
-    for vote in root.findall(".//member"):
-        first_name = vote.find('first_name').text.strip()
-        last_name = vote.find('last_name').text.strip()
-        party = vote.find('party').text.strip()
-        state = vote.find('state').text.strip()
-        vote_position = vote.find('vote_cast').text.strip().lower()        
-
-        # Append to votes list
-        votes.append({
-            'CAND_LAST_NAME': last_name,
-            'CAND_OFFICE_ST': state,
-            'CAND_VOTE': vote_position
-            })
-
-    # Create a DataFrame from the votes list
-    df = pd.DataFrame(votes, columns=['CAND_LAST_NAME', 'CAND_OFFICE_ST', 'CAND_VOTE'])
-    df['CAND_LAST_NAME'] = df['CAND_LAST_NAME'].str.upper()
-    df.head()
-
-    # Find the "bill title" 
-    bill_title = root.find(".//vote_question_text").text
-
-    # Find the "bill date" 
-    bill_date = root.find(".//vote_date").text
-
-    # Find the "vote result" 
-    vote_result = root.find(".//vote_result_text").text
-
     return bill_title, bill_date, vote_result, df
