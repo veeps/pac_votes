@@ -1,0 +1,105 @@
+---
+title: "PAC Contributions"
+output: html_document
+date: "2024-09-28"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(scales)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+df <- read_csv("data/pacs_1995_2024.csv")
+
+```
+
+## Exploring Insurance PAC Contributions
+
+Exploring contribution data on the following insurance PACS: Humana, CVS Aetna, Elevance, United Health, HCSC, Centene. This explores data from 1992 to 2024. In total, $28.5M has been contributed to candidates - 56% to Republicans and 43.6% to Democrats. Throughout the years, Elevance has contributed the most amount of money to candidates. I'll have to understand this value more, but 8.5M over the last 32 years doesn't seem like that much money to me.
+
+
+```{r header, echo=FALSE}
+
+df |>
+  group_by(PAC) |>
+  summarise(TOTAL = sum(TRANSACTION_AMT)) |>
+  arrange(desc(TOTAL)) |>
+  mutate(TOTAL = format(TOTAL, big.mark = ",", scientific = FALSE)) |>
+  knitr::kable()
+
+```
+
+## Contributions by Party Affiliation
+Here's a quick breakdown to see how each insurance PAC contributes by party affiliation. It looks like most of the PACS are pretty evenly split with their contributions. Elevance and United Health has contributed more to Republican candidates. 
+
+
+``` {r affiliation, echo=FALSE}
+
+affiliation <- df |>
+  group_by(PAC, CAND_PTY_AFFILIATION) |>
+  summarise(TOTAL = sum(TRANSACTION_AMT)) |>
+  arrange(desc(TOTAL)) |>
+  filter((CAND_PTY_AFFILIATION == "REP") | (CAND_PTY_AFFILIATION == "DEM"))
+
+# Create a bar plot with `facet_wrap`
+ggplot(affiliation, aes(x = CAND_PTY_AFFILIATION, y = TOTAL, fill = CAND_PTY_AFFILIATION)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.7)) +
+  scale_y_continuous(labels = label_number_si(unit = "M")) +  # Format y-axis to show values in millions
+  theme_minimal() +
+  facet_wrap(~PAC, scales = "fixed") +
+  scale_fill_manual(values = c("DEM" = "#98c1d9", "REP" = "#ee6c4d")) +  # Set custom colors
+  labs(
+    title = "Total Contributions by PAC and Candidate Party Affiliation",
+    x = "Candidate Party Affiliation",
+    y = "Total Contributions (in Millions)",
+    fill = "Party Affiliation"
+  ) 
+
+```
+
+## Yearly PAC Contributions
+
+Here's how much each PAC has contributed over the years. We see that Elevance has been making more contributions over the years, but United Health has started contributing more since 2011. Curious if the passing of Obamacare has anything to do with that.
+
+
+```{r average, echo=FALSE}
+
+summary <- df |>
+  group_by(PAC, YEAR_END) |>
+  summarise(TOTAL = sum(TRANSACTION_AMT)) 
+
+
+plot_ly( 
+  data = summary, 
+  x = ~YEAR_END,
+  y = ~TOTAL,
+  legendgroup = ~as.factor(PAC),
+  color = ~PAC, 
+  type = 'scatter',
+  mode = 'lines', 
+  showlegend =  T,
+  opacity = 1
+) |>
+    layout(
+      width = 900,
+    title = "Annual PAC Contributions to Candidates",
+    yaxis = list(title="Total Contributions"),
+    xaxis = list(title="Year")
+  )
+```
+
+## Candidates That Have Received the Most Money
+
+Here are the top 20 candidates who have received the most money from insurance PACS in the last 16 years (since 2008). 
+
+``` {r candidates, echo = FALSE}
+
+df |>
+  filter(YEAR_END > 2008 ) |>
+  group_by(CAND_NAME) |>
+  summarise(TOTAL = sum(TRANSACTION_AMT), affiliation = first(CAND_PTY_AFFILIATION), office =first(CAND_OFFICE), state=first(CAND_ST)) |>
+  arrange(desc(TOTAL)) |>
+  head(20) |>
+  mutate(TOTAL = format(TOTAL, big.mark = ",", scientific = FALSE)) |>
+  knitr::kable()
+```
