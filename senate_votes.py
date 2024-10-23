@@ -45,3 +45,7 @@ df = df[(df['CAND_OFFICE_ST_v']=="") | (df['CAND_OFFICE_ST_v'] == df['CAND_OFFIC
 df.drop(columns=['CAND_OFFICE_ST_v'], inplace = True)
 
 df.head()
+
+df.to_csv("hr3755.csv", index = False)
+
+df["CAND_VOTE"].unique()

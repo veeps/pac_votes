@@ -35,10 +35,11 @@ insurance_pacs = ["C00271007","C00384818","C00197228","C00274431","C00199711","C
 
 ############## Read in data files
 contributions = read_and_process_files(r"contributions_(\d+_\d+)\.txt", "data/header_contributions.csv")
-
+contributions['YEAR'].unique()
 
 ############## Get committee names
 cm = pd.read_csv("data/cm_2023_2024.txt", sep = "|")
+
 header = pd.read_csv("data/header_file.csv")
 cm.columns = header.columns
 pacs = pd.merge(contributions, cm[["CMTE_ID", "CMTE_NM"]], how = "left")
@@ -56,5 +57,16 @@ df = pd.merge(pacs, candidates, how  = "left", left_on= "CAND_ID", right_on="CAN
 #### Get last names
 df['CAND_LAST_NAME'] = df['CAND_NAME'].str.split(",").str[0]
 
+#### Update to a numeric date
+df['YEAR_END'] = df['YEAR'].str.split("-").str[1]
+df['YEAR_END'] = df["YEAR_END"].astype(int)
+
+#### Get simplified pac names
+names = pd.read_csv("pac_names.csv")
+df_names = pd.merge(df, names, how = "left")
+
 #### Write to csv
-df.to_csv("pacs.csv", index = False)
+df_names.to_csv("data/pacs_1995_2024.csv", index = False)
+
+df["YEAR"].unique()
+df.shape
